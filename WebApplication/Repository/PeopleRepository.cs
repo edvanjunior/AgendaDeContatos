@@ -36,7 +36,7 @@ namespace WebApplication.Repository
 
         public async Task<Person> GetPeopleByIdAsync(int? id)
         {
-           return await _context.People
+            return await _context.People.Include(c => c.Contacts).Include(a => a.Addresses)
                  .FirstOrDefaultAsync(m => m.Id == id);
         }
 

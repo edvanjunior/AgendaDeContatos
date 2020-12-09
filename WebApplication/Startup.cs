@@ -38,6 +38,8 @@ namespace WebApplication
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddScoped<IPeopleRepository, PeopleRepository>();
+            services.AddScoped<IContactsRepository, ContactsRepository>();
+            services.AddScoped<IAddressesRepository, AddressesRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
