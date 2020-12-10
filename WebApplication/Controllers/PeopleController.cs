@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Models;
 using WebApplication.Repository;
+using WebApplication.ViewModels;
 
 namespace WebApplication.Controllers
 {
@@ -52,11 +53,15 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nome")] Person person)
+        public async Task<IActionResult> Create([Bind("Id,Nome")] PersonViewModel person)
         {
             if (ModelState.IsValid)
             {
-                await _peopleRepository.CreatePersonAsync(person);
+                Person p = new Person
+                {
+                    Nome = person.Nome
+                };
+                await _peopleRepository.CreatePersonAsync(p);
                 return RedirectToAction(nameof(Index));
             }
             return View(person);
@@ -81,7 +86,7 @@ namespace WebApplication.Controllers
         // POST: People/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nome")] Person person)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nome")] EditPersonViewModel person)
         {
             if (id != person.Id)
             {
@@ -92,7 +97,11 @@ namespace WebApplication.Controllers
             {
                 try
                 {
-                    await _peopleRepository.UpdatePersonAsync(person);
+                    Person p = new Person
+                    {
+                        Nome = person.Nome
+                    };
+                    await _peopleRepository.UpdatePersonAsync(p);
                 }
                 catch (DbUpdateConcurrencyException)
                 {

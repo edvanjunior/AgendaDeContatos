@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Models;
 using WebApplication.Repository;
+using WebApplication.ViewModels;
 
 namespace WebApplication.Controllers
 {
@@ -54,11 +55,17 @@ namespace WebApplication.Controllers
         // POST: Contacts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Type,Value,PersonId")] Contact contact)
+        public async Task<IActionResult> Create([Bind("Type,Value,PersonId")] CreateContactViewModel contact)
         {
             if (ModelState.IsValid)
             {
-                await _contactsRepository.CreateContactAsync(contact);
+                Contact c = new Contact
+                {
+                    PersonId = contact.PersonId,
+                    Type = contact.Type,
+                    Value = contact.Value
+                };
+                await _contactsRepository.CreateContactAsync(c);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["PersonId"] = new SelectList(await _peopleRepository.GetPeopleAsync(), "Id", "Nome", contact.PersonId);
@@ -86,7 +93,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Type,Value,PersonId")] Contact contact)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Type,Value,PersonId")] EditContactViewModel contact)
         {
             if (id != contact.Id)
             {
@@ -97,7 +104,13 @@ namespace WebApplication.Controllers
             {
                 try
                 {
-                    await _contactsRepository.UpdateContactsAsync(contact);
+                    Contact c = new Contact
+                    {
+                        PersonId = contact.PersonId,
+                        Type = contact.Type,
+                        Value = contact.Value
+                    };
+                    await _contactsRepository.UpdateContactsAsync(c);
                 }
                 catch (DbUpdateConcurrencyException)
                 {

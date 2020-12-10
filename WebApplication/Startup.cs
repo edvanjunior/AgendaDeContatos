@@ -62,6 +62,7 @@ namespace WebApplication
 
             app.UseMvc(routes =>
             {
+                routes.MapAreaRoute("api", "Api", "api/{controller}/{action}");
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=People}/{action=Index}/{id?}");

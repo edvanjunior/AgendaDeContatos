@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Models;
 using WebApplication.Repository;
+using WebApplication.ViewModels;
 
 namespace WebApplication.Controllers
 {
@@ -45,7 +46,7 @@ namespace WebApplication.Controllers
         }
 
         // GET: Addresses/Create
-        public async Task<IActionResult> CreateAsync()
+        public async Task<IActionResult> Create()
         {
             ViewData["PersonId"] = new SelectList(await _peopleRepository.GetPeopleAsync(), "Id", "Nome");
             return View();
@@ -54,11 +55,22 @@ namespace WebApplication.Controllers
         // POST: Addresses/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Location,Number,Complement,AddressType,Neighborhood,City,State,PersonId")] Address address)
+        public async Task<IActionResult> Create([Bind("Id,Location,Number,Complement,AddressType,Neighborhood,City,State,PersonId")] CreateAddressViewModel address)
         {
             if (ModelState.IsValid)
             {
-                await _addressesRepository.CreateAddressAsync(address);
+                Address a = new Address
+                {
+                    AddressType = address.AddressType,
+                    City = address.City,
+                    Complement = address.Complement,
+                    Location = address.Location,
+                    Neighborhood = address.Neighborhood,
+                    Number = address.Number,
+                    PersonId = address.PersonId,
+                    State = address.State
+                };
+                await _addressesRepository.CreateAddressAsync(a);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["PersonId"] = new SelectList(await _peopleRepository.GetPeopleAsync(), "Id", "Nome", address.PersonId);
@@ -86,7 +98,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Location,Number,Complement,AddressType,Neighborhood,City,State,PersonId")] Address address)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Location,Number,Complement,AddressType,Neighborhood,City,State,PersonId")] EditAddressViewModel address)
         {
             if (id != address.Id)
             {
@@ -97,7 +109,18 @@ namespace WebApplication.Controllers
             {
                 try
                 {
-                    await _addressesRepository.UpdateAddressesAsync(address);
+                    Address a = new Address
+                    {
+                        AddressType = address.AddressType,
+                        City = address.City,
+                        Complement = address.Complement,
+                        Location = address.Location,
+                        Neighborhood = address.Neighborhood,
+                        Number = address.Number,
+                        PersonId = address.PersonId,
+                        State = address.State
+                    };
+                    await _addressesRepository.UpdateAddressesAsync(a);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
