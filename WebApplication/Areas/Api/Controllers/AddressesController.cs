@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Models;
+using WebApplication.Repository;
+using WebApplication.ViewModels;
 
 namespace WebApplication.Areas.Api.Controllers
 {
@@ -13,25 +15,27 @@ namespace WebApplication.Areas.Api.Controllers
     [ApiController]
     public class AddressesController : ControllerBase
     {
-        private readonly Context _context;
+        private readonly IAddressesRepository _addressesRepository;
+        private readonly IPeopleRepository _peopleRepository;
 
-        public AddressesController(Context context)
+        public AddressesController(IAddressesRepository addressesRepository, IPeopleRepository peopleRepository)
         {
-            _context = context;
+            _peopleRepository = peopleRepository;
+            _addressesRepository = addressesRepository;
         }
 
         // GET: api/Addresses
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Address>>> GetAddresses()
+        public async Task<IEnumerable<Address>> GetAddresses()
         {
-            return await _context.Addresses.ToListAsync();
+            return await _addressesRepository.GetAddressesAsync();
         }
 
         // GET: api/Addresses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Address>> GetAddress(int id)
         {
-            var address = await _context.Addresses.FindAsync(id);
+            var address = await _addressesRepository.GetAddressesByIdAsync(id);
 
             if (address == null)
             {
@@ -43,18 +47,30 @@ namespace WebApplication.Areas.Api.Controllers
 
         // PUT: api/Addresses/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAddress(int id, Address address)
+        public async Task<IActionResult> PutAddress(int id, EditAddressViewModel address)
         {
             if (id != address.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(address).State = EntityState.Modified;
+            
 
             try
             {
-                await _context.SaveChangesAsync();
+                Address a = new Address
+                {
+                    Id = address.Id,
+                    AddressType = address.AddressType,
+                    City = address.City,
+                    Complement = address.Complement,
+                    Location = address.Location,
+                    Neighborhood = address.Neighborhood,
+                    Number = address.Number,
+                    PersonId = address.PersonId,
+                    State = address.State
+                };
+                await _addressesRepository.UpdateAddressesAsync(a);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -75,31 +91,44 @@ namespace WebApplication.Areas.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Address>> PostAddress(Address address)
         {
-            _context.Addresses.Add(address);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            Address a = new Address
+            {
+                AddressType = address.AddressType,
+                City = address.City,
+                Complement = address.Complement,
+                Location = address.Location,
+                Neighborhood = address.Neighborhood,
+                Number = address.Number,
+                PersonId = address.PersonId,
+                State = address.State
+            };
+            await _addressesRepository.CreateAddressAsync(a);
 
-            return CreatedAtAction("GetAddress", new { id = address.Id }, address);
+            return StatusCode(201);
         }
 
         // DELETE: api/Addresses/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Address>> DeleteAddress(int id)
         {
-            var address = await _context.Addresses.FindAsync(id);
+            var address = await _addressesRepository.GetAddressesByIdAsync(id);
             if (address == null)
             {
                 return NotFound();
             }
 
-            _context.Addresses.Remove(address);
-            await _context.SaveChangesAsync();
+            await _addressesRepository.DeleteAddressAsync(id);
 
             return address;
         }
 
         private bool AddressExists(int id)
         {
-            return _context.Addresses.Any(e => e.Id == id);
+            return _addressesRepository.AddressExists(id);
         }
     }
 }

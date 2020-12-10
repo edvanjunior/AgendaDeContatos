@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Models;
+using WebApplication.Repository;
+using WebApplication.ViewModels;
 
 namespace WebApplication.Areas.Api.Controllers
 {
@@ -13,25 +15,27 @@ namespace WebApplication.Areas.Api.Controllers
     [ApiController]
     public class ContactsController : ControllerBase
     {
-        private readonly Context _context;
+        private readonly IContactsRepository _contactsRepository;
+        private readonly IPeopleRepository _peopleRepository;
 
-        public ContactsController(Context context)
+        public ContactsController(IContactsRepository contactsRepository, IPeopleRepository peopleRepository)
         {
-            _context = context;
+            _contactsRepository = contactsRepository;
+            _peopleRepository = peopleRepository;
         }
 
         // GET: api/Contacts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Contact>>> GetContacts()
+        public async Task<IEnumerable<Contact>> GetContacts()
         {
-            return await _context.Contacts.ToListAsync();
+            return await _contactsRepository.GetContactsAsync();
         }
 
         // GET: api/Contacts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Contact>> GetContact(int id)
         {
-            var contact = await _context.Contacts.FindAsync(id);
+            var contact = await _contactsRepository.GetContactsByIdAsync(id);
 
             if (contact == null)
             {
@@ -43,18 +47,25 @@ namespace WebApplication.Areas.Api.Controllers
 
         // PUT: api/Contacts/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContact(int id, Contact contact)
+        public async Task<IActionResult> PutContact(int id, EditContactViewModel contact)
         {
             if (id != contact.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(contact).State = EntityState.Modified;
+            //_context.Entry(contact).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                Contact c = new Contact
+                {
+                    Id = contact.Id,
+                    PersonId = contact.PersonId,
+                    Type = contact.Type,
+                    Value = contact.Value
+                };
+                await _contactsRepository.UpdateContactsAsync(c);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -73,33 +84,37 @@ namespace WebApplication.Areas.Api.Controllers
 
         // POST: api/Contacts
         [HttpPost]
-        public async Task<ActionResult<Contact>> PostContact(Contact contact)
+        public async Task<ActionResult<Contact>> PostContact(CreateContactViewModel contact)
         {
-            _context.Contacts.Add(contact);
-            await _context.SaveChangesAsync();
+            Contact c = new Contact
+            {
+                PersonId = contact.PersonId,
+                Type = contact.Type,
+                Value = contact.Value
+            };
+            await _contactsRepository.CreateContactAsync(c);
 
-            return CreatedAtAction("GetContact", new { id = contact.Id }, contact);
+            return StatusCode(201);
         }
 
         // DELETE: api/Contacts/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Contact>> DeleteContact(int id)
         {
-            var contact = await _context.Contacts.FindAsync(id);
+            var contact = await _contactsRepository.GetContactsByIdAsync(id);
             if (contact == null)
             {
                 return NotFound();
             }
 
-            _context.Contacts.Remove(contact);
-            await _context.SaveChangesAsync();
+            await _contactsRepository.DeleteContactAsync(id);
 
             return contact;
         }
 
         private bool ContactExists(int id)
         {
-            return _context.Contacts.Any(e => e.Id == id);
+            return _contactsRepository.ContactExists(id);
         }
     }
 }

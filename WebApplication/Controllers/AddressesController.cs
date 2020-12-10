@@ -91,7 +91,20 @@ namespace WebApplication.Controllers
                 return NotFound();
             }
             ViewData["PersonId"] = new SelectList(await _peopleRepository.GetPeopleAsync(), "Id", "Nome", address.PersonId);
-            return View(address);
+
+            var vm = new EditAddressViewModel
+            {
+                Id = address.Id,
+                AddressType = address.AddressType,
+                City = address.City,
+                Complement = address.Complement,
+                Location = address.Location,
+                Neighborhood = address.Neighborhood,
+                Number = address.Number,
+                PersonId = address.PersonId,
+                State = address.State
+            };
+            return View(vm);
         }
 
         // POST: Addresses/Edit/5
@@ -111,6 +124,7 @@ namespace WebApplication.Controllers
                 {
                     Address a = new Address
                     {
+                        Id = address.Id,
                         AddressType = address.AddressType,
                         City = address.City,
                         Complement = address.Complement,

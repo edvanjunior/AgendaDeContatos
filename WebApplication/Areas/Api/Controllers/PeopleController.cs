@@ -45,7 +45,7 @@ namespace WebApplication.Areas.Api.Controllers
 
         // PUT: api/People/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, EditPersonViewModel person)
+        public async Task<IActionResult> PutPerson(int id,[FromBody] EditPersonViewModel person)
         {
             if (id != person.Id || !ModelState.IsValid)
             {
@@ -58,6 +58,7 @@ namespace WebApplication.Areas.Api.Controllers
             {
                 Person p = new Person
                 {
+                    Id = person.Id,
                     Nome = person.Nome
                 };
                 await _peopleRepository.UpdatePersonAsync(p);
@@ -79,7 +80,7 @@ namespace WebApplication.Areas.Api.Controllers
 
         // POST: api/People
         [HttpPost]
-        public async Task<ActionResult<Person>> PostPerson(PersonViewModel person)
+        public async Task<ActionResult<Person>> PostPerson([FromBody] PersonViewModel person)
         {
             if (!ModelState.IsValid)
             {

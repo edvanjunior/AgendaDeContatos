@@ -44,7 +44,7 @@ namespace WebApplication.Repository
 
         public async Task UpdatePersonAsync(Person person)
         {
-            _context.Entry(person).State = EntityState.Modified;
+
             _context.Update(person);
             await _context.SaveChangesAsync();
         }

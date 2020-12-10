@@ -99,6 +99,7 @@ namespace WebApplication.Controllers
                 {
                     Person p = new Person
                     {
+                        Id = person.Id,
                         Nome = person.Nome
                     };
                     await _peopleRepository.UpdatePersonAsync(p);

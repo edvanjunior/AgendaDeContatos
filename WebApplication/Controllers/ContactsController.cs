@@ -86,7 +86,15 @@ namespace WebApplication.Controllers
                 return NotFound();
             }
             ViewData["PersonId"] = new SelectList(await _peopleRepository.GetPeopleAsync(), "Id", "Nome", contact.PersonId);
-            return View(contact);
+
+            var vm = new EditContactViewModel
+            {
+                Id = contact.Id,
+                PersonId = contact.PersonId,
+                Type = contact.Type,
+                Value = contact.Value
+            };
+            return View(vm);
         }
 
         // POST: Contacts/Edit/5
@@ -106,6 +114,7 @@ namespace WebApplication.Controllers
                 {
                     Contact c = new Contact
                     {
+                        Id = contact.Id,
                         PersonId = contact.PersonId,
                         Type = contact.Type,
                         Value = contact.Value
